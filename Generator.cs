@@ -48,7 +48,7 @@ namespace GameEngine
                 {
                     for (int y = (int)pos.Y - radius; y < pos.Y + radius; y++)
                     {
-                        float spread = Math.Abs(noise.GetNext(x, seed, noiseFactor)) * 1.5f;
+                        float spread = noise.GetNext(x, seed, noiseFactor) * 1.5f;
 
                         if (Vector2.Distance(new Vector2(x, y), pos) <= radius + spread)
                             GameDemo.AddTile(x, y, Tiles.GetTile(type));

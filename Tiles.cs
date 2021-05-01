@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GameEngine.ItemTools
 {
-    public static class Tiles
+    public class Tiles
     {
         public static Dictionary<string, Tile> allTiles = new Dictionary<string, Tile>();
 
@@ -17,6 +17,7 @@ namespace GameEngine.ItemTools
             allTiles.Add("IronOre", new Tile("IronOre", 300));
             allTiles.Add("GoldOre", new Tile("GoldOre", 300));
             allTiles.Add("SilverOre", new Tile("SilverOre", 300));
+            allTiles.Add("Furnace", new Tile("Furnace", 400, 3, 2));
         }
 
         public static Tile GetTile(string item)
@@ -29,6 +30,7 @@ namespace GameEngine.ItemTools
                 i.type = j.type;
                 i.hitPoints = j.hitPoints;
                 i.color = j.color;
+                i.size = j.size;
                 return i;
             }
 

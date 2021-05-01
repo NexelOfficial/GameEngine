@@ -187,9 +187,10 @@ namespace GameEngine
             foreach (Vector2 chunk in playerChunks)
                 foreach (Vector2 pos in GameDemo.chunks[chunk].Keys)
                 {
-                    if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y), collisionBox) || IsTouchingTop(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y), collisionBox))
+                    Tile tile = GameDemo.chunks[chunk][pos];
+                    if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox) || IsTouchingTop(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox))
                         Velocity = new Vector2(Velocity.X, 0);
-                    if (IsTouchingLeft(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8), collisionBox) || IsTouchingRight(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8), collisionBox))
+                    if (IsTouchingLeft(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox) || IsTouchingRight(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox))
                         Velocity = new Vector2(0, Velocity.Y);
                 }
         }
@@ -220,9 +221,9 @@ namespace GameEngine
         #endregion
 
         #region Collision
-        public static Rectangle GetTileCollider(float x, float y)
+        public static Rectangle GetTileCollider(float x, float y, Tile tile)
         {
-            return new Rectangle((int)x, (int)y, 8, 8);
+            return new Rectangle((int)x, (int)y - ((int)tile.size.Y - 1) * 8, (int)tile.size.X * 8, (int)tile.size.Y * 8);
         }
         public bool IsTouchingLeft(Rectangle objectOne, Rectangle objectTwo)
         {

@@ -12,6 +12,7 @@ namespace GameEngine
     {
         public string type;
         public Color color = Color.White;
+        public Vector2 size;
         public float scale = 1f;
         public bool active = true;
         public int hitPoints;
@@ -21,10 +22,11 @@ namespace GameEngine
             this.type = null;
         }
 
-        public Tile(string type, int hitPoints = 100)
+        public Tile(string type, int hitPoints = 100, int sizeX = 1, int sizeY = 1)
         {
             this.type = type;
             this.hitPoints = hitPoints;
+            this.size = new Vector2(sizeX, sizeY);
         }
     }
 }

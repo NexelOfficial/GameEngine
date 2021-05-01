@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GameEngine.ItemTools
 {
-    public static class Items
+    public class Items
     {
         public static Dictionary<string, Item> allItems = new Dictionary<string, Item>();
 
@@ -17,6 +17,7 @@ namespace GameEngine.ItemTools
             allItems.Add("IronOre", new Item("IronOre_Item", 1, 1, 0));
             allItems.Add("GoldOre", new Item("GoldOre_Item", 1, 1, 0));
             allItems.Add("SilverOre", new Item("SilverOre_Item", 1, 1, 0));
+            allItems.Add("Furnace", new Item("Furnace_Item", 1, 1, 0, "Furnace"));
             allItems.Add("Iron_Pickaxe", new Item("Iron_Pickaxe", 1, 2, 60));
         }
 

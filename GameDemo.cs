@@ -34,8 +34,8 @@ namespace GameEngine
             Content.RootDirectory = "Content";
 
             IsMouseVisible = true;
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredBackBufferWidth = 1600;
+            graphics.PreferredBackBufferHeight = 900;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
         }
@@ -58,6 +58,8 @@ namespace GameEngine
 
             gen.seed = seed;
             gen.GenerateTerrain(mapWidth, mapHeight);
+
+            AddTile(2000, GetHighestY(2000) - 2, Tiles.GetTile("Furnace"));
 
             rand = new Random(seed);
             noise = new Noise();
@@ -153,11 +155,21 @@ namespace GameEngine
         #region TileMethods
         public void Draw(Vector2 pos)
         {
-            Vector2 drawPos = new Vector2((int)pos.X * 8, (int)pos.Y * 8);
-            Rectangle spriteSize = new Rectangle(GetTileState(pos), 0, 8, 8);
-            string type = GetTile(pos).type;
+            Tile tile = GetTile(pos);
 
-            spriteBatch.Draw(Sprites.GetSprite(0, type), drawPos, spriteSize, Color.White);
+            for (int i = 0; i < tile.size.X; i++)
+                for (int j = 0; j < tile.size.Y; j++)
+                {
+                    Vector2 drawPos = new Vector2(i * 8 + pos.X * 8, (pos.Y * 8 + j * 8) - (tile.size.Y - 1) * 8);
+                    Rectangle spriteSize = new Rectangle();
+
+                    if (tile.size.X == 1 && tile.size.Y == 1)
+                        spriteSize = new Rectangle(GetTileState(pos), 0, 8, 8);
+                    else
+                        spriteSize = new Rectangle(i * 8, j * 8, 8, 8);
+
+                    spriteBatch.Draw(Sprites.GetSprite(0, tile.type), drawPos, spriteSize, Color.White);
+                }
         }
 
         public static void AddTile(Vector2 pos, Tile tile)
