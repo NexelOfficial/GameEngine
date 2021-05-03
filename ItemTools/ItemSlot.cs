@@ -24,13 +24,23 @@ namespace GameEngine.ItemTools
 
         public ItemSlot()
         {
-            
+            this.position = Vector2.Zero;
+            this.size = 1.0f;
+            this.item = new Item();
         }
 
         public void Draw(SpriteBatch batch)
         {
+            // Draw frame
             float scaleOffset = ((64.0f * size) - 64.0f) * 0.5f;
             batch.Draw(Sprites.GetSprite(2, "Item_Slot"), position - new Vector2(scaleOffset, scaleOffset), new Rectangle(0, 0, 64, 64), Color.White, 0f, Vector2.Zero, size, SpriteEffects.None, 0f);
+            shown = true;
+
+            // Draw item
+            if (item.sprite == null)
+                return;
+
+            batch.Draw(item.sprite, position, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
         }
 
         public bool IsClicked()

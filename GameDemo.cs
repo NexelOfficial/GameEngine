@@ -38,6 +38,9 @@ namespace GameEngine
             graphics.PreferredBackBufferHeight = 720;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
+
+            screenHeight = graphics.PreferredBackBufferHeight;
+            screenWidth = graphics.PreferredBackBufferWidth;
         }
 
         protected override void Initialize()
@@ -50,7 +53,8 @@ namespace GameEngine
             Items.InitItems();
             Tiles.InitTiles();
             player.inventory.AddItem(Items.GetItem("Iron_Pickaxe"));
-            player.inventory.UnlockedBlueprints.Add(new Blueprint(Tiles.GetTile("Furnace"), new List<Item> { Items.GetItem("Stone") }));
+            player.inventory.AddItem(Items.GetItem("Stone"));
+            player.inventory.UnlockedBlueprints.Add(new Blueprint(Tiles.GetTile("Furnace"), new List<Item> { Items.GetItem("Stone", 20) }));
             
             // Load the generator and seed
             seed = rand.Next(0, 99999);
@@ -61,10 +65,6 @@ namespace GameEngine
             gen.GenerateTerrain(mapWidth, mapHeight);
 
             rand = new Random(seed);
-
-            // General variables
-            screenHeight = graphics.PreferredBackBufferHeight;
-            screenWidth = graphics.PreferredBackBufferWidth;
 
             base.Initialize();
         }
@@ -127,7 +127,6 @@ namespace GameEngine
             base.Draw(gameTime);
         }
 
-
         private void DrawBlueprint()
         {
             if (player.inventory.placingBlueprint != null)
@@ -175,30 +174,6 @@ namespace GameEngine
         #endregion
 
         #region TileMethods
-        public static bool CanPlace(Vector2 pos, Tile tile)
-        {
-            for (int i = 0; i < tile.size.X; i++)
-            {
-                for (int j = 0; j < tile.size.Y; j++)
-                {
-                    int x = (int)pos.X + i;
-                    int y = (int)pos.Y - j;
-
-                    if (GetTile(x, y).type != null)
-                        return false;
-
-                    if (x > Math.Floor(player.Position.X / 8) - player.Size.X / 16 - 1 && 
-                        x < Math.Ceiling(player.Position.X / 8) + player.Size.X / 16 + 1 && 
-                        y > Math.Floor(player.Position.Y / 8) - player.Size.Y / 16 - 1 && 
-                        y < Math.Ceiling(player.Position.Y / 8) + player.Size.Y / 16 + 1)
-                        return false;
-                }
-
-                if (GetTile((int)pos.X + i, (int)pos.Y + 1).type == null)
-                    return false;
-            }
-            return true;
-        }
 
         public static void AddTile(Vector2 pos, Tile tile)
         {
@@ -215,6 +190,32 @@ namespace GameEngine
         public static void AddTile(int x, int y, Tile tile)
         {
             AddTile(new Vector2(x, y), tile);
+        }
+
+        public static bool CanPlace(Vector2 pos, Tile tile, bool floored = true)
+        {
+            for (int i = 0; i < tile.size.X; i++)
+            {
+                for (int j = 0; j < tile.size.Y; j++)
+                {
+                    int x = (int)pos.X + i;
+                    int y = (int)pos.Y - j;
+
+                    if (GetTile(x, y).type != null)
+                        return false;
+
+                    if (x > Math.Floor(player.Position.X / 8) - player.Size.X / 16 - 1 &&
+                        x < Math.Ceiling(player.Position.X / 8) + player.Size.X / 16 + 1 &&
+                        y > Math.Floor(player.Position.Y / 8) - player.Size.Y / 16 - 1 &&
+                        y < Math.Ceiling(player.Position.Y / 8) + player.Size.Y / 16 + 1)
+                        return false;
+                }
+
+                if (floored)
+                    if (GetTile((int)pos.X + i, (int)pos.Y + 1).type == null)
+                        return false;
+            }
+            return true;
         }
 
         public static void RemoveTile(Vector2 pos)

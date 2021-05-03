@@ -14,9 +14,13 @@ namespace GameEngine.ItemTools
         public List<ItemSlot> Slots = new List<ItemSlot>();
         public List<Blueprint> UnlockedBlueprints = new List<Blueprint>();
 
+        public FurnaceMenu furnace;
+        public BlueprintsMenu blueprints;
+
         public int selectedIndex;
         public bool inventoryShown = false;
         public bool blueprintsShown = false;
+        public bool furnaceShown = false;
         public Tile placingBlueprint;
 
         public Item heldItem = new Item();
@@ -33,6 +37,9 @@ namespace GameEngine.ItemTools
                 for (int j = 0; j <= 4; j++)
                     Slots[i + (j * 10)] = new ItemSlot(new Vector2(i * 72 + 8, j * 72 + 8), new Item());
             }
+
+            furnace = new FurnaceMenu(this);
+            blueprints = new BlueprintsMenu();
         }
 
         // Update methods
@@ -61,18 +68,28 @@ namespace GameEngine.ItemTools
             if (Controls.IsPressed(Keys.D0))
                 selectedIndex = 9;
 
+            // Toggle inventory
             if (Controls.IsPressed(Keys.E))
                 if (inventoryShown)
                     inventoryShown = false;
                 else
                     inventoryShown = true;
 
+            // Toggle blueprints menu
             if (Controls.IsPressed(Keys.B))
                 if (blueprintsShown)
                     blueprintsShown = false;
                 else
                     blueprintsShown = true;
 
+            // Toggle furnace menu
+            if (Controls.IsPressed(Keys.F))
+                if (furnaceShown)
+                    furnaceShown = false;
+                else
+                    furnaceShown = true;
+
+            // Check if slot is clicked
             foreach (ItemSlot slot in Slots)
             {
                 if (slot.IsClicked())
@@ -82,6 +99,9 @@ namespace GameEngine.ItemTools
                     slot.item = heldItem;
                     heldItem = slotItem;
                 }
+
+                // Reset slot
+                slot.shown = false;
             }
         }
 
@@ -92,42 +112,29 @@ namespace GameEngine.ItemTools
             for (int i = 0; i <= 9; i++)
             {
                 Slots[i].Draw(batch);
-                Slots[i].shown = true;
 
                 for (int j = 0; j <= 3; j++)
                 {
                     if (inventoryShown == true)
-                    {
                         Slots[i + (j * 10) + 10].Draw(batch);
-                        Slots[i + (j * 10) + 10].shown = true;
-                    }
-                    else
-                        Slots[i + (j * 10) + 10].shown = false;
                 }
             }
 
-            // Check if a slot is clicked
-            foreach (ItemSlot slot in Slots)
+            // Draw held item
+            if (heldItem.sprite != null)
             {
-                if (!slot.shown)
-                    continue;
-
-                int slotIndex = Slots.IndexOf(slot);
-
-                if (slot.item.sprite == null)
-                    continue;
-
-                int slotPosX = slotIndex % 10 * 72 + 16;
-                int slotPosY = (int)Math.Floor(slotIndex / 10.0f) * 72 + 16;
-
-                batch.Draw(slot.item.sprite, new Vector2(slotPosX, slotPosY), new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
+                MouseState mouse = Mouse.GetState();
+                Vector2 mousePos = new Vector2(mouse.X, mouse.Y);
+                batch.Draw(heldItem.sprite, mousePos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
             }
 
             // Draw blueprint menu
-            if (blueprintsShown && placingBlueprint == null)
-            {
-                new BlueprintsMenu().Draw(batch);
-            }
+            if (blueprintsShown && !furnaceShown && placingBlueprint == null)
+                blueprints.Draw(batch);
+
+            // Draw furnace menu
+            if (furnaceShown && !blueprintsShown)
+                furnace.Draw(batch);
         }
 
         // Callable methods
@@ -154,10 +161,16 @@ namespace GameEngine.ItemTools
         {
             foreach (ItemSlot slot in Slots)
                 if (slot.item.type == type)
-                    while (slot.item.amount - 1 >= 0 && amount > 0)
+                {
+                    int hit = 0;
+                    while (slot.item.amount - hit - 1 >= 0 && amount > 0)
+                    {
+                        hit += 1;
                         amount -= 1;
+                    }
+                }
 
-            if (amount == 0)
+            if (amount <= 0)
                 return true;
             else
                 return false;

@@ -174,11 +174,12 @@ namespace GameEngine
                 lastAction = gameTime.TotalGameTime;
                 cooldown = TimeSpan.FromMilliseconds(selectedItem.waitTime * 100);
 
-                if (inventory.HasItem(selectedItem.type, 1))
-                {
-                    inventory.RemoveItem(selectedItem.type, 1);
-                    GameDemo.AddTile(new Vector2(blockX, blockY), Tiles.GetTile(selectedItem.block));
-                }
+                if (GameDemo.CanPlace(new Vector2(blockX, blockY), Tiles.GetTile(selectedItem.block), false))
+                    if (inventory.HasItem(selectedItem.type, 1))
+                    {
+                        inventory.RemoveItem(selectedItem.type, 1);
+                        GameDemo.AddTile(new Vector2(blockX, blockY), Tiles.GetTile(selectedItem.block));
+                    }
             }
         }
 

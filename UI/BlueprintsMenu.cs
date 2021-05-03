@@ -28,8 +28,21 @@ namespace GameEngine.UI
                 // Check if clicked
                 if (blueprint.IsClicked())
                 {
-                    GameDemo.player.inventory.blueprintsShown = false;
-                    GameDemo.player.inventory.placingBlueprint = blueprint.result;
+                    Inventory inventory = GameDemo.player.inventory;
+
+                    bool canCraft = true;
+                    foreach (Item material in blueprint.materials)
+                        if (!inventory.HasItem(material.type, material.amount))
+                            canCraft = false;
+
+                    if (canCraft)
+                    {
+                        foreach (Item material in blueprint.materials)
+                            inventory.RemoveItem(material.type, material.amount);
+
+                        inventory.blueprintsShown = false;
+                        inventory.placingBlueprint = blueprint.result;
+                    }
                 }
             }
         }
