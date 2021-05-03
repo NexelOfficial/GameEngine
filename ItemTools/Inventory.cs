@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using GameEngine.UI;
 
 namespace GameEngine.ItemTools
 {
@@ -11,8 +12,13 @@ namespace GameEngine.ItemTools
     {
         public Player owner;
         public List<ItemSlot> Slots = new List<ItemSlot>();
+        public List<Blueprint> UnlockedBlueprints = new List<Blueprint>();
+
         public int selectedIndex;
         public bool inventoryShown = false;
+        public bool blueprintsShown = false;
+        public Tile placingBlueprint;
+
         public Item heldItem = new Item();
 
         public Inventory(Player player)
@@ -60,6 +66,12 @@ namespace GameEngine.ItemTools
                     inventoryShown = false;
                 else
                     inventoryShown = true;
+
+            if (Controls.IsPressed(Keys.B))
+                if (blueprintsShown)
+                    blueprintsShown = false;
+                else
+                    blueprintsShown = true;
 
             foreach (ItemSlot slot in Slots)
             {
@@ -109,6 +121,12 @@ namespace GameEngine.ItemTools
                 int slotPosY = (int)Math.Floor(slotIndex / 10.0f) * 72 + 16;
 
                 batch.Draw(slot.item.sprite, new Vector2(slotPosX, slotPosY), new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
+            }
+
+            // Draw blueprint menu
+            if (blueprintsShown && placingBlueprint == null)
+            {
+                new BlueprintsMenu().Draw(batch);
             }
         }
 

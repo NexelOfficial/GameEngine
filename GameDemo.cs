@@ -13,10 +13,10 @@ namespace GameEngine
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch, hudBatch;
-        Player player;
+
+        public static Player player;
         Camera camera;
         Random rand = new Random();
-        Noise noise = new Noise();
 
         public static int screenWidth;
         public static int screenHeight;
@@ -34,8 +34,8 @@ namespace GameEngine
             Content.RootDirectory = "Content";
 
             IsMouseVisible = true;
-            graphics.PreferredBackBufferWidth = 1600;
-            graphics.PreferredBackBufferHeight = 900;
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
         }
@@ -50,7 +50,8 @@ namespace GameEngine
             Items.InitItems();
             Tiles.InitTiles();
             player.inventory.AddItem(Items.GetItem("Iron_Pickaxe"));
-
+            player.inventory.UnlockedBlueprints.Add(new Blueprint(Tiles.GetTile("Furnace"), new List<Item> { Items.GetItem("Stone") }));
+            
             // Load the generator and seed
             seed = rand.Next(0, 99999);
 
@@ -59,10 +60,7 @@ namespace GameEngine
             gen.seed = seed;
             gen.GenerateTerrain(mapWidth, mapHeight);
 
-            AddTile(2000, GetHighestY(2000) - 2, Tiles.GetTile("Furnace"));
-
             rand = new Random(seed);
-            noise = new Noise();
 
             // General variables
             screenHeight = graphics.PreferredBackBufferHeight;
@@ -101,7 +99,9 @@ namespace GameEngine
 
             foreach (Vector2 chunk in player.playerChunks)
                 foreach (Vector2 pos in chunks[chunk].Keys)
-                    Draw(pos);
+                    GetTile(pos).Draw(spriteBatch, pos, Color.White);
+
+            DrawBlueprint();
 
             player.Draw(spriteBatch);
             spriteBatch.End();
@@ -125,6 +125,28 @@ namespace GameEngine
 
             hudBatch.End();
             base.Draw(gameTime);
+        }
+
+
+        private void DrawBlueprint()
+        {
+            if (player.inventory.placingBlueprint != null)
+            {
+                Tile placingBlueprint = player.inventory.placingBlueprint;
+                Vector2 worldSpace = player.GetMousePosition();
+
+                int blockX = (int)(Math.Floor(worldSpace.X / 8) + (placingBlueprint.size.X / 4));
+                int blockY = (int)(Math.Floor(worldSpace.Y / 8) + (placingBlueprint.size.Y));
+                bool canPlace = CanPlace(new Vector2(blockX, blockY), placingBlueprint);
+
+                spriteBatch.Draw(placingBlueprint.sprite, new Vector2(blockX * 8, (blockY - placingBlueprint.size.Y / 2) * 8), canPlace ? Color.Blue : Color.Red);
+
+                if (Controls.IsPressed("LeftButton") && canPlace)
+                {
+                    AddTile(blockX, blockY, Tiles.GetTile(placingBlueprint.type));
+                    player.inventory.placingBlueprint = null;
+                }
+            }
         }
 
         #region ChunkMethods
@@ -153,23 +175,29 @@ namespace GameEngine
         #endregion
 
         #region TileMethods
-        public void Draw(Vector2 pos)
+        public static bool CanPlace(Vector2 pos, Tile tile)
         {
-            Tile tile = GetTile(pos);
-
             for (int i = 0; i < tile.size.X; i++)
+            {
                 for (int j = 0; j < tile.size.Y; j++)
                 {
-                    Vector2 drawPos = new Vector2(i * 8 + pos.X * 8, (pos.Y * 8 + j * 8) - (tile.size.Y - 1) * 8);
-                    Rectangle spriteSize = new Rectangle();
+                    int x = (int)pos.X + i;
+                    int y = (int)pos.Y - j;
 
-                    if (tile.size.X == 1 && tile.size.Y == 1)
-                        spriteSize = new Rectangle(GetTileState(pos), 0, 8, 8);
-                    else
-                        spriteSize = new Rectangle(i * 8, j * 8, 8, 8);
+                    if (GetTile(x, y).type != null)
+                        return false;
 
-                    spriteBatch.Draw(Sprites.GetSprite(0, tile.type), drawPos, spriteSize, Color.White);
+                    if (x > Math.Floor(player.Position.X / 8) - player.Size.X / 16 - 1 && 
+                        x < Math.Ceiling(player.Position.X / 8) + player.Size.X / 16 + 1 && 
+                        y > Math.Floor(player.Position.Y / 8) - player.Size.Y / 16 - 1 && 
+                        y < Math.Ceiling(player.Position.Y / 8) + player.Size.Y / 16 + 1)
+                        return false;
                 }
+
+                if (GetTile((int)pos.X + i, (int)pos.Y + 1).type == null)
+                    return false;
+            }
+            return true;
         }
 
         public static void AddTile(Vector2 pos, Tile tile)
@@ -262,61 +290,6 @@ namespace GameEngine
                 }
 
             return y;
-        }
-
-        public int GetTileState(Vector2 pos)
-        {
-            int x = (int)pos.X;
-            int y = (int)pos.Y;
-
-            bool up = false, down = false, left = false, right = false;
-
-            string type = GetTile(x, y).type;
-
-            if (GetTile(x, y - 1).type != null)
-                up = true;
-            if (GetTile(x, y + 1).type != null)
-                down = true;
-            if (GetTile(x + 1, y).type != null)
-                right = true;
-            if (GetTile(x - 1, y).type != null)
-                left = true;
-
-
-            if (left && right && up && down)
-                return 1 * 8;
-            if (up && down && right)
-                return 0;
-            if (up && down && left)
-                return 2 * 8;
-            if (right && down && left)
-                return 3 * 8;
-            if (right && up && left)
-                return 4 * 8;
-            if (left && down)
-                return 8 * 8;
-            if (right && down)
-                return 7 * 8;
-            if (left && up)
-                return 6 * 8;
-            if (right && up)
-                return 5 * 8;
-            if (left && right)
-                return 13 * 8;
-            if (up && down)
-                return 14 * 8;
-            if (left)
-                return 9 * 8;
-            if (right)
-                return 10 * 8;
-            if (up)
-                return 11 * 8;
-            if (down)
-                return 12 * 8;
-            if (!down && !up && !right && !left)
-                return 15 * 8;
-
-            return 15 * 8;
         }
         #endregion
     }

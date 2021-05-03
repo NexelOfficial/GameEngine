@@ -258,9 +258,9 @@ namespace GameEngine
             foreach (Vector2 chunk in playerChunks)
                 foreach (Vector2 pos in GameDemo.chunks[chunk].Keys)
                 {
-                    Rectangle tileCollider = new Rectangle((int)(pos.X * 8), (int)(pos.Y * 8) - 2, 8, 8);
+                    Tile tile = GameDemo.chunks[chunk][pos];
 
-                    if (IsTouchingBottom(tileCollider, collisionBox))
+                    if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - 2, tile), collisionBox))
                         return true;
                 }
 
