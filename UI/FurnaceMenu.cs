@@ -34,6 +34,16 @@ namespace GameEngine.UI
             inventory.Slots.Add(result);
         }
 
+        public void Destroy(Vector2 pos)
+        {
+            Inventory inventory = GameDemo.player.inventory;
+            inventory.Slots.Remove(oreOne);
+            inventory.Slots.Remove(oreTwo);
+            inventory.Slots.Remove(oreThree);
+            inventory.Slots.Remove(result);
+            GameDemo.furnaces.Remove(pos);
+        }
+
         public void Draw(SpriteBatch batch)
         {
             ItemSlot[] slots = { oreOne, oreTwo, oreThree, result };
@@ -47,6 +57,7 @@ namespace GameEngine.UI
             if (oreOne.item.type == oreTwo.item.type && oreTwo.item.type == oreThree.item.type)
             {
                 result.item.type = oreOne.item.type;
+                result.item.sprite = oreOne.item.sprite;
                 result.item.amount += 1;
                 oreOne.item.amount -= 1;
                 oreTwo.item.amount -= 1;

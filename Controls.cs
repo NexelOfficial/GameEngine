@@ -39,8 +39,6 @@ namespace GameEngine
 
         public static bool IsDown(string button)
         {
-            GetMouseState();
-
             switch (button)
             {
                 case "LeftButton":
@@ -55,8 +53,6 @@ namespace GameEngine
 
         public static bool IsPressed(string button)
         {
-            GetMouseState();
-
             switch (button)
             {
                 case "LeftButton":

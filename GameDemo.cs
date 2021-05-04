@@ -1,4 +1,5 @@
 ﻿using GameEngine.ItemTools;
+using GameEngine.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -15,6 +16,8 @@ namespace GameEngine
         SpriteBatch spriteBatch, hudBatch;
 
         public static Player player;
+        public static SpriteFont font;
+
         Camera camera;
         Random rand = new Random();
 
@@ -27,6 +30,7 @@ namespace GameEngine
         public static int seed;
 
         public static Dictionary<Vector2, Dictionary<Vector2, Tile>> chunks = new Dictionary<Vector2, Dictionary<Vector2, Tile>>();
+        public static Dictionary<Vector2, FurnaceMenu> furnaces = new Dictionary<Vector2, FurnaceMenu>();
 
         public GameDemo()
         {
@@ -45,6 +49,11 @@ namespace GameEngine
 
         protected override void Initialize()
         {
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
             // Create camera, player, inventory and sprites
             camera = new Camera();
             player = new Player();
@@ -52,10 +61,12 @@ namespace GameEngine
             Sprites.InitSprites(Content);
             Items.InitItems();
             Tiles.InitTiles();
+            font = Content.Load<SpriteFont>("segoe");
+
             player.inventory.AddItem(Items.GetItem("Iron_Pickaxe"));
-            player.inventory.AddItem(Items.GetItem("Stone"));
+            player.inventory.AddItem(Items.GetItem("Furnace"));
             player.inventory.UnlockedBlueprints.Add(new Blueprint(Tiles.GetTile("Furnace"), new List<Item> { Items.GetItem("Stone", 20) }));
-            
+
             // Load the generator and seed
             seed = rand.Next(0, 99999);
 
@@ -66,11 +77,6 @@ namespace GameEngine
 
             rand = new Random(seed);
 
-            base.Initialize();
-        }
-
-        protected override void LoadContent()
-        {
             // Create spritebatches
             spriteBatch = new SpriteBatch(GraphicsDevice);
             hudBatch = new SpriteBatch(GraphicsDevice);
@@ -86,6 +92,8 @@ namespace GameEngine
             camera.Update(gameTime, player);
             player.Update(gameTime);
             player.inventory.SelectSlot();
+
+            Controls.GetMouseState();
 
             base.Update(gameTime);
         }
@@ -184,6 +192,9 @@ namespace GameEngine
             if (!chunks.ContainsKey(chunk))
                 chunks.Add(chunk, new Dictionary<Vector2, Tile>());
 
+            if (tile.type == "Furnace")
+                furnaces.Add(pos, new FurnaceMenu(player.inventory));
+
             chunks[chunk][pos] = tile;
         }
 
@@ -226,6 +237,9 @@ namespace GameEngine
 
             if (!chunks.ContainsKey(chunk))
                 return;
+
+            if (furnaces.ContainsKey(pos))
+                furnaces[pos].Destroy(pos);
 
             chunks[chunk].Remove(pos);
         }

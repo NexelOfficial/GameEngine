@@ -40,10 +40,14 @@ namespace GameEngine.ItemTools
             if (item.sprite == null)
                 return;
 
-            batch.Draw(item.sprite, position, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
+            Vector2 itemPos = new Vector2(position.X + 8, position.Y + 8);
+            Vector2 textPos = new Vector2(itemPos.X + 32, itemPos.Y + 32);
+
+            batch.DrawString(GameDemo.font, item.amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 0.6f);
+            batch.Draw(item.sprite, itemPos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.5f);
         }
 
-        public bool IsClicked()
+        public bool IsClicked(string button)
         {
             MouseState mouse = Mouse.GetState();
             float finalSize = 64.0f * size;
@@ -51,7 +55,7 @@ namespace GameEngine.ItemTools
             if (mouse.X > position.X && mouse.X < position.X + finalSize)
                 if (mouse.Y > position.Y && mouse.Y < position.Y + finalSize)
                 {
-                    if (Controls.IsPressed("LeftButton") && shown)
+                    if (Controls.IsPressed(button) && shown)
                         return true;
                 }
 

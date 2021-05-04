@@ -14,8 +14,8 @@ namespace GameEngine.ItemTools
         public List<ItemSlot> Slots = new List<ItemSlot>();
         public List<Blueprint> UnlockedBlueprints = new List<Blueprint>();
 
-        public FurnaceMenu furnace;
         public BlueprintsMenu blueprints;
+        public FurnaceMenu furnace;
 
         public int selectedIndex;
         public bool inventoryShown = false;
@@ -38,7 +38,6 @@ namespace GameEngine.ItemTools
                     Slots[i + (j * 10)] = new ItemSlot(new Vector2(i * 72 + 8, j * 72 + 8), new Item());
             }
 
-            furnace = new FurnaceMenu(this);
             blueprints = new BlueprintsMenu();
         }
 
@@ -73,31 +72,61 @@ namespace GameEngine.ItemTools
                 if (inventoryShown)
                     inventoryShown = false;
                 else
+                {
+                    furnace = null;
                     inventoryShown = true;
+                    blueprintsShown = false;
+                }
 
             // Toggle blueprints menu
             if (Controls.IsPressed(Keys.B))
                 if (blueprintsShown)
                     blueprintsShown = false;
                 else
+                {
+                    furnace = null;
+                    inventoryShown = false;
                     blueprintsShown = true;
-
-            // Toggle furnace menu
-            if (Controls.IsPressed(Keys.F))
-                if (furnaceShown)
-                    furnaceShown = false;
-                else
-                    furnaceShown = true;
+                }
 
             // Check if slot is clicked
             foreach (ItemSlot slot in Slots)
             {
-                if (slot.IsClicked())
+                if (heldItem.amount <= 0)
+                    heldItem = new Item();
+                if (slot.item.amount <= 0)
+                    slot.item = new Item();
+
+                if (slot.IsClicked("LeftButton"))
                 {
                     Item slotItem = slot.item;
 
-                    slot.item = heldItem;
-                    heldItem = slotItem;
+                    if (slot.item.type == heldItem.type)
+                    {
+                        slot.item.amount += heldItem.amount;
+                        heldItem = new Item();
+                    }
+                    else
+                    {
+                        slot.item = heldItem;
+                        heldItem = slotItem;
+                    }
+                }
+
+                if (slot.IsClicked("RightButton"))
+                {
+                    if (slot.item.type == heldItem.type)
+                    {
+                        slot.item.amount += 1;
+                        heldItem.amount -= 1;
+                    } 
+                    else if (heldItem.type == null)
+                    {
+                        heldItem.type = slot.item.type;
+                        heldItem.sprite = slot.item.sprite;
+                        heldItem.amount = slot.item.amount / 2;
+                        slot.item.amount -= heldItem.amount;
+                    }
                 }
 
                 // Reset slot
@@ -114,10 +143,8 @@ namespace GameEngine.ItemTools
                 Slots[i].Draw(batch);
 
                 for (int j = 0; j <= 3; j++)
-                {
-                    if (inventoryShown == true)
+                    if (inventoryShown)
                         Slots[i + (j * 10) + 10].Draw(batch);
-                }
             }
 
             // Draw held item
@@ -125,16 +152,43 @@ namespace GameEngine.ItemTools
             {
                 MouseState mouse = Mouse.GetState();
                 Vector2 mousePos = new Vector2(mouse.X, mouse.Y);
-                batch.Draw(heldItem.sprite, mousePos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 1f);
+                Vector2 textPos = new Vector2(mouse.X + 32, mouse.Y + 32);
+
+                batch.DrawString(GameDemo.font, heldItem.amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+                batch.Draw(heldItem.sprite, mousePos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.9f);
             }
 
             // Draw blueprint menu
-            if (blueprintsShown && !furnaceShown && placingBlueprint == null)
+            if (blueprintsShown && placingBlueprint == null)
                 blueprints.Draw(batch);
 
             // Draw furnace menu
-            if (furnaceShown && !blueprintsShown)
+            Vector2 worldSpace = owner.GetMousePosition();
+            int blockX = (int)Math.Floor(worldSpace.X / 8) + 1;
+            int blockY = (int)Math.Floor(worldSpace.Y / 8) + 2;
+            Tile clickedTile = GameDemo.GetTile(blockX, blockY);
+
+            if (clickedTile.type == "Furnace")
+                if (GameDemo.furnaces.ContainsKey(new Vector2(blockX, blockY)))
+                    if (Controls.IsPressed("RightButton"))
+                        furnace = GameDemo.furnaces[new Vector2(blockX, blockY)];
+
+            // Draw furnace menu
+            if (furnace != null)
+            {
                 furnace.Draw(batch);
+                furnaceShown = true;
+                blueprintsShown = false;
+                inventoryShown = false;
+            }
+
+            // Close menu(s)
+            if (Controls.IsPressed(Keys.Escape))
+            {
+                furnace = null;
+                blueprintsShown = false;
+                inventoryShown = false;
+            }
         }
 
         // Callable methods
