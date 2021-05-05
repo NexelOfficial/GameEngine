@@ -47,22 +47,34 @@ namespace GameEngine.UI
         public void Draw(SpriteBatch batch)
         {
             ItemSlot[] slots = { oreOne, oreTwo, oreThree, result };
-            batch.Draw(Sprites.GetSprite(2, "Furnace"), new Vector2(position.X, position.Y), Color.White);
+            batch.Draw(Sprites.GetSprite(2, "Furnace"), new Vector2(position.X, position.Y), new Rectangle(0, 0, 576, 384), Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 0.1f);
 
             // Draw slots
             foreach (ItemSlot slot in slots)
                 slot.Draw(batch);
 
             // Check if a bar can be crafted
-            if (oreOne.item.type == oreTwo.item.type && oreTwo.item.type == oreThree.item.type)
+            Item resultItem = GetResult(oreOne.item.type, oreTwo.item.type, oreThree.item.type);
+
+            if ((result.item.type == null || result.item.type == resultItem.type) && resultItem.type != null)
             {
-                result.item.type = oreOne.item.type;
-                result.item.sprite = oreOne.item.sprite;
-                result.item.amount += 1;
+                result.item.type = resultItem.type;
+                result.item.sprite = resultItem.sprite;
+                result.item.amount += resultItem.amount;
                 oreOne.item.amount -= 1;
                 oreTwo.item.amount -= 1;
                 oreThree.item.amount -= 1;
             }
+        }
+
+        public Item GetResult(string itemOne, string itemTwo, string itemThree)
+        {
+            if (itemOne == "IronOre" && itemTwo == "IronOre" && itemThree == "IronOre")
+                return Items.GetItem("IronBar");
+            else if (itemOne == "GoldOre" && itemTwo == "GoldOre" && itemThree == "GoldOre")
+                return Items.GetItem("GoldBar");
+            else
+                return new Item();
         }
     }
 }

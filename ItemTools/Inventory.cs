@@ -41,7 +41,6 @@ namespace GameEngine.ItemTools
             blueprints = new BlueprintsMenu();
         }
 
-        // Update methods
         public void SelectSlot()
         {
             Controls.GetState();
@@ -119,13 +118,20 @@ namespace GameEngine.ItemTools
                     {
                         slot.item.amount += 1;
                         heldItem.amount -= 1;
-                    } 
+                    }
                     else if (heldItem.type == null)
                     {
                         heldItem.type = slot.item.type;
                         heldItem.sprite = slot.item.sprite;
                         heldItem.amount = slot.item.amount / 2;
                         slot.item.amount -= heldItem.amount;
+                    }
+                    else if (heldItem.type != null && slot.item.type == null)
+                    {
+                        slot.item.type = heldItem.type;
+                        slot.item.sprite = heldItem.sprite;
+                        slot.item.amount += 1;
+                        heldItem.amount -= 1;
                     }
                 }
 
@@ -134,7 +140,6 @@ namespace GameEngine.ItemTools
             }
         }
 
-        // Draw methods
         public void DrawInventory(SpriteBatch batch)
         {
             // Draw item slots
@@ -152,10 +157,8 @@ namespace GameEngine.ItemTools
             {
                 MouseState mouse = Mouse.GetState();
                 Vector2 mousePos = new Vector2(mouse.X, mouse.Y);
-                Vector2 textPos = new Vector2(mouse.X + 32, mouse.Y + 32);
 
-                batch.DrawString(GameDemo.font, heldItem.amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
-                batch.Draw(heldItem.sprite, mousePos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.9f);
+                heldItem.Draw(batch, mousePos);
             }
 
             // Draw blueprint menu

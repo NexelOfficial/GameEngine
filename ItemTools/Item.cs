@@ -1,8 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace GameEngine.ItemTools
 {
@@ -28,7 +25,15 @@ namespace GameEngine.ItemTools
 
         public Item()
         {
+            this.amount = 0;
+        }
 
+        public void Draw(SpriteBatch batch, Vector2 pos, float scale = 3f)
+        {
+            Vector2 textPos = new Vector2(pos.X + 32 / 3 * scale, pos.Y + 32 / 3 * scale);
+
+            batch.DrawString(GameDemo.font, amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+            batch.Draw(sprite, pos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None, 0.9f);
         }
     }
 }

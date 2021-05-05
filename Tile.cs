@@ -15,18 +15,21 @@ namespace GameEngine
         public Color color = Color.White;
         public Vector2 size;
         public float scale = 1f;
-        public bool active = true;
+        public bool collides = true;
         public int hitPoints;
+        public int frameX = 0;
+        public int frameY = 0;
 
         public Tile()
         {
             this.type = null;
         }
 
-        public Tile(string type, int hitPoints = 100, int sizeX = 1, int sizeY = 1)
+        public Tile(string type, bool collides = true, int hitPoints = 100, int sizeX = 1, int sizeY = 1)
         {
             this.sprite = Sprites.GetSprite(0, type);
             this.type = type;
+            this.collides = collides;
             this.hitPoints = hitPoints;
             this.size = new Vector2(sizeX, sizeY);
         }
@@ -40,9 +43,9 @@ namespace GameEngine
                     Rectangle spriteSize = new Rectangle();
 
                     if (size.X == 1 && size.Y == 1)
-                        spriteSize = new Rectangle(GetTileState(pos), 0, 8, 8);
+                        spriteSize = new Rectangle(GetTileState(pos) + frameX, frameY, 8, 8);
                     else
-                        spriteSize = new Rectangle(i * 8, j * 8, 8, 8);
+                        spriteSize = new Rectangle(i * 8 + frameX, j * 8 + frameY, 8, 8);
 
                     batch.Draw(sprite, drawPos, spriteSize, color);
                 }

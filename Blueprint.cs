@@ -41,10 +41,7 @@ namespace GameEngine
             {
                 int matPos = materials.IndexOf(material);
                 Vector2 itemPos = new Vector2(position.X + 16 + 64 + matPos * 48, position.Y + 16);
-                Vector2 textPos = new Vector2(itemPos.X + 16, itemPos.Y + 16);
-
-                batch.DrawString(GameDemo.font, material.amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
-                batch.Draw(material.sprite, new Vector2(position.X + 16 + 64 + matPos * 48, position.Y + 16), new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.9f);
+                material.Draw(batch, itemPos, 2f);
             }
         }
 

@@ -33,7 +33,7 @@ namespace GameEngine.ItemTools
         {
             // Draw frame
             float scaleOffset = ((64.0f * size) - 64.0f) * 0.5f;
-            batch.Draw(Sprites.GetSprite(2, "Item_Slot"), position - new Vector2(scaleOffset, scaleOffset), new Rectangle(0, 0, 64, 64), Color.White, 0f, Vector2.Zero, size, SpriteEffects.None, 0f);
+            batch.Draw(Sprites.GetSprite(2, "Item_Slot"), position - new Vector2(scaleOffset, scaleOffset), new Rectangle(0, 0, 64, 64), Color.White, 0f, Vector2.Zero, size, SpriteEffects.None, 0.3f);
             shown = true;
 
             // Draw item
@@ -41,10 +41,7 @@ namespace GameEngine.ItemTools
                 return;
 
             Vector2 itemPos = new Vector2(position.X + 8, position.Y + 8);
-            Vector2 textPos = new Vector2(itemPos.X + 32, itemPos.Y + 32);
-
-            batch.DrawString(GameDemo.font, item.amount.ToString(), textPos, Color.White, 0.0f, Vector2.Zero, 1f, SpriteEffects.None, 0.6f);
-            batch.Draw(item.sprite, itemPos, new Rectangle(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0.5f);
+            item.Draw(batch, itemPos);
         }
 
         public bool IsClicked(string button)

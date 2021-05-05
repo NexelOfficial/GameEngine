@@ -38,9 +38,11 @@ namespace GameEngine
             Content.RootDirectory = "Content";
 
             IsMouseVisible = true;
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
-            graphics.IsFullScreen = false;
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            //graphics.PreferredBackBufferWidth = 1280;
+            //graphics.PreferredBackBufferHeight = 720;
+            graphics.IsFullScreen = true;
             graphics.ApplyChanges();
 
             screenHeight = graphics.PreferredBackBufferHeight;
@@ -64,8 +66,12 @@ namespace GameEngine
             font = Content.Load<SpriteFont>("segoe");
 
             player.inventory.AddItem(Items.GetItem("Iron_Pickaxe"));
-            player.inventory.AddItem(Items.GetItem("Furnace"));
-            player.inventory.UnlockedBlueprints.Add(new Blueprint(Tiles.GetTile("Furnace"), new List<Item> { Items.GetItem("Stone", 20) }));
+            player.inventory.UnlockedBlueprints.Add(new Blueprint(
+                Tiles.GetTile("Furnace"), new List<Item> 
+                { 
+                    Items.GetItem("Stone", 20) 
+                }
+            ));
 
             // Load the generator and seed
             seed = rand.Next(0, 99999);
@@ -226,6 +232,16 @@ namespace GameEngine
                     if (GetTile((int)pos.X + i, (int)pos.Y + 1).type == null)
                         return false;
             }
+            return true;
+        }
+
+        public static bool IsEmpty(Vector2 pos, int width, int height)
+        {
+            for (int i = (int)pos.X; i < pos.X + width; i++)
+                for (int j = (int)pos.Y; j < pos.Y + height; j++)
+                    if (GetTile(i, j).type != null)
+                        return false;
+
             return true;
         }
 

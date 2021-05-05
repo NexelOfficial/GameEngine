@@ -189,6 +189,9 @@ namespace GameEngine
                 foreach (Vector2 pos in GameDemo.chunks[chunk].Keys)
                 {
                     Tile tile = GameDemo.chunks[chunk][pos];
+                    if (tile.collides == false)
+                        continue;
+
                     if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox) || IsTouchingTop(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox))
                         Velocity = new Vector2(Velocity.X, 0);
                     if (IsTouchingLeft(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox) || IsTouchingRight(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox))
@@ -260,6 +263,8 @@ namespace GameEngine
                 foreach (Vector2 pos in GameDemo.chunks[chunk].Keys)
                 {
                     Tile tile = GameDemo.chunks[chunk][pos];
+                    if (tile.collides == false)
+                        continue;
 
                     if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - 2, tile), collisionBox))
                         return true;

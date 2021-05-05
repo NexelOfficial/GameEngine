@@ -69,6 +69,7 @@ namespace GameEngine
             genDeserts(width);
             genCaves(width, height);
             genOres(width, height);
+            genTrees(width);
         }
 
         private void genDirtStone(int width)
@@ -187,6 +188,43 @@ namespace GameEngine
 
                     if (GameDemo.GetTile(x, y).type != null)
                         PlaceTileBlob(new Vector2(x, y), "GoldOre", rand.Next(2, 3), rand.Next(0, 2));
+                }
+            }
+        }
+
+        private void genTrees(int width)
+        {
+            Tile birchLog = Tiles.GetTile("BirchLog");
+            for (int x = 0; x < width; x++)
+            {
+                if (rand.Next(0, 10) == 0)
+                {
+                    int height = rand.Next(8, 13);
+                    int highestY = GameDemo.GetHighestY(x);
+
+                    // Check if tree can be placed
+                    if (!GameDemo.IsEmpty(new Vector2(x-11, highestY - height - 11), 11, 11 + height-2))
+                        continue;
+
+                    if (!GameDemo.IsEmpty(new Vector2(x-1, highestY - 2), 4, 2))
+                        continue;
+
+                    if (GameDemo.GetTile(x, highestY).type != "Grass" || GameDemo.GetTile(x + 1, highestY).type != "Grass")
+                        continue;
+
+                    // Add wood
+                    for (int y = highestY - height; y < highestY; y++)
+                    {
+                        GameDemo.AddTile(x, y, birchLog);
+                        GameDemo.AddTile(x + 1, y, birchLog);
+                    }
+                    Tile treeTop = Tiles.GetTile("BirchTop");
+                    treeTop.frameX = rand.Next(0, 3) * 96;
+                    GameDemo.AddTile(x - 5, highestY - height - 1, treeTop);
+
+                    // Add grass to bottom
+                    for (int i = 0; i < 4; i++)
+                        GameDemo.AddTile(x - 1 + i, highestY, Tiles.GetTile("Grass"));
                 }
             }
         }

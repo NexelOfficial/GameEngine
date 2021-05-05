@@ -11,13 +11,15 @@ namespace GameEngine.ItemTools
 
         public static void InitItems()
         {
-            allItems.Add("Grass", new Item("Grass_Item", 1, 1, 0, "Grass"));
-            allItems.Add("Stone", new Item("Stone_Item", 1, 1, 0, "Stone"));
-            allItems.Add("Sand", new Item("Sand_Item", 1, 1, 0, "Sand"));
-            allItems.Add("IronOre", new Item("IronOre_Item"));
-            allItems.Add("GoldOre", new Item("GoldOre_Item"));
-            allItems.Add("SilverOre", new Item("SilverOre_Item"));
-            allItems.Add("Furnace", new Item("Furnace_Item", 1, 1, 0, "Furnace"));
+            allItems.Add("Grass", new Item("Grass", 1, 1, 0, "Grass"));
+            allItems.Add("Stone", new Item("Stone", 1, 1, 0, "Stone"));
+            allItems.Add("Sand", new Item("Sand", 1, 1, 0, "Sand"));
+            allItems.Add("IronOre", new Item("IronOre"));
+            allItems.Add("GoldOre", new Item("GoldOre"));
+            allItems.Add("SilverOre", new Item("SilverOre"));
+            allItems.Add("IronBar", new Item("IronBar"));
+            allItems.Add("GoldBar", new Item("GoldBar"));
+            allItems.Add("Furnace", new Item("Furnace", 1, 1, 0, "Furnace"));
             allItems.Add("Iron_Pickaxe", new Item("Iron_Pickaxe", 1, 2, 60));
         }
 

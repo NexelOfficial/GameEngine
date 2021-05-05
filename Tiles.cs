@@ -12,13 +12,15 @@ namespace GameEngine.ItemTools
 
         public static void InitTiles()
         {
-            allTiles.Add("Grass", new Tile("Grass", 100));
-            allTiles.Add("Stone", new Tile("Stone", 200));
-            allTiles.Add("Sand", new Tile("Sand", 80));
-            allTiles.Add("IronOre", new Tile("IronOre", 300));
-            allTiles.Add("GoldOre", new Tile("GoldOre", 300));
-            allTiles.Add("SilverOre", new Tile("SilverOre", 300));
-            allTiles.Add("Furnace", new Tile("Furnace", 400, 3, 2));
+            allTiles.Add("BirchLog", new Tile("BirchLog", false, 600));
+            allTiles.Add("BirchTop", new Tile("BirchTop", false, 600, 12, 12));
+            allTiles.Add("Grass", new Tile("Grass", true, 100));
+            allTiles.Add("Stone", new Tile("Stone", true, 200));
+            allTiles.Add("Sand", new Tile("Sand", true, 80));
+            allTiles.Add("IronOre", new Tile("IronOre", true, 300));
+            allTiles.Add("GoldOre", new Tile("GoldOre", true, 300));
+            allTiles.Add("SilverOre", new Tile("SilverOre", true, 300));
+            allTiles.Add("Furnace", new Tile("Furnace", false, 400, 3, 2));
         }
 
         public static Tile GetTile(string item)
@@ -29,6 +31,7 @@ namespace GameEngine.ItemTools
                 Tile i = new Tile(item);
 
                 i.type = j.type;
+                i.collides = j.collides;
                 i.hitPoints = j.hitPoints;
                 i.color = j.color;
                 i.size = j.size;
