@@ -11,6 +11,9 @@ namespace GameEngine.ItemTools
 
         public static void InitItems()
         {
+            allItems.Add("BirchWood", new Item("BirchWood", 1, 1, 0, "BirchWood"));
+            allItems.Add("BirchLog", new Item("BirchWood", 1, 1, 0, "BirchWood"));
+            allItems.Add("BirchTop", new Item("BirchWood", 1, 1, 0, "BirchWood"));
             allItems.Add("Grass", new Item("Grass", 1, 1, 0, "Grass"));
             allItems.Add("Stone", new Item("Stone", 1, 1, 0, "Stone"));
             allItems.Add("Sand", new Item("Sand", 1, 1, 0, "Sand"));
@@ -20,7 +23,7 @@ namespace GameEngine.ItemTools
             allItems.Add("IronBar", new Item("IronBar"));
             allItems.Add("GoldBar", new Item("GoldBar"));
             allItems.Add("Furnace", new Item("Furnace", 1, 1, 0, "Furnace"));
-            allItems.Add("Iron_Pickaxe", new Item("Iron_Pickaxe", 1, 2, 60));
+            allItems.Add("IronPickaxe", new Item("IronPickaxe", 1, 2, 60));
         }
 
         public static Item GetItem(string item, int amount = 1)

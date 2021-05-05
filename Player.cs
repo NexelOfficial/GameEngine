@@ -28,6 +28,7 @@ namespace GameEngine
         public TimeSpan lastAction;
 
         public List<Vector2> playerChunks;
+        int cs = GameDemo.chunkSize;
 
         public Rectangle collisionBox
         {
@@ -44,7 +45,7 @@ namespace GameEngine
 
         public void SetPos(int x, int y)
         {
-            Position = new Vector2(x * 8, y * 8);
+            Position = new Vector2(x * cs, y * cs);
         }
 
         public void Draw(SpriteBatch batch)
@@ -54,9 +55,7 @@ namespace GameEngine
 
         public void Update(GameTime gameTime)
         {
-            float scalingFactorX = GameDemo.screenWidth / 160 / (GameDemo.scaleFactor / 2);
-            float scalingFactorY = GameDemo.screenHeight / 160 / (GameDemo.scaleFactor / 2);
-            playerChunks = GameDemo.GetChunkGroup(GetChunk(), (int)scalingFactorX, (int)scalingFactorY);
+            playerChunks = GameDemo.GetChunkGroup(GetChunk(), (int)GameDemo.chunkScalingFactor.X, (int)GameDemo.chunkScalingFactor.Y);
             Move();
             Break(gameTime);
             Build(gameTime);
@@ -105,8 +104,8 @@ namespace GameEngine
 
                     // Check if block is close enough
                     Vector2 worldSpace = GetMousePosition();
-                    int blockX = (int)Math.Floor(worldSpace.X / 8) + 1;
-                    int blockY = (int)Math.Floor(worldSpace.Y / 8) + 2;
+                    int blockX = (int)Math.Floor(worldSpace.X / cs) + 1;
+                    int blockY = (int)Math.Floor(worldSpace.Y / cs) + 2;
                     Tile minedTile = GameDemo.GetTile(blockX, blockY);
                     float distance = Vector2.Distance(worldSpace, Position);
 
@@ -121,10 +120,10 @@ namespace GameEngine
                     if (minedTile.hitPoints <= 0)
                     {
                         // Block is mined
-                        if (minedTile.type != null)
-                            inventory.AddItem(Items.GetItem(minedTile.type));
-
-                        GameDemo.RemoveTile(blockX, blockY);
+                        if (minedTile.isWood == true)
+                            GameDemo.RemoveTree(new Vector2(blockX, blockY));
+                        else
+                            GameDemo.RemoveTile(new Vector2(blockX, blockY), true);
                     }
                 }
             }
@@ -146,8 +145,8 @@ namespace GameEngine
 
                 // Check if block is close enough
                 Vector2 worldSpace = GetMousePosition();
-                int blockX = (int)Math.Floor(worldSpace.X / 8) + 1;
-                int blockY = (int)Math.Floor(worldSpace.Y / 8) + 2;
+                int blockX = (int)Math.Floor(worldSpace.X / cs) + 1;
+                int blockY = (int)Math.Floor(worldSpace.Y / cs) + 2;
                 float distance = Vector2.Distance(worldSpace, Position);
                 Tile currentTile = GameDemo.GetTile(blockX, blockY);
 
@@ -192,9 +191,9 @@ namespace GameEngine
                     if (tile.collides == false)
                         continue;
 
-                    if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox) || IsTouchingTop(GetTileCollider(pos.X * 8, pos.Y * 8 - Velocity.Y, tile), collisionBox))
+                    if (IsTouchingBottom(GetTileCollider(pos.X * cs, pos.Y * cs - Velocity.Y, tile), collisionBox) || IsTouchingTop(GetTileCollider(pos.X * cs, pos.Y * cs - Velocity.Y, tile), collisionBox))
                         Velocity = new Vector2(Velocity.X, 0);
-                    if (IsTouchingLeft(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox) || IsTouchingRight(GetTileCollider(pos.X * 8 - Velocity.X, pos.Y * 8, tile), collisionBox))
+                    if (IsTouchingLeft(GetTileCollider(pos.X * cs - Velocity.X, pos.Y * cs, tile), collisionBox) || IsTouchingRight(GetTileCollider(pos.X * cs - Velocity.X, pos.Y * cs, tile), collisionBox))
                         Velocity = new Vector2(0, Velocity.Y);
                 }
         }
@@ -227,7 +226,7 @@ namespace GameEngine
         #region Collision
         public static Rectangle GetTileCollider(float x, float y, Tile tile)
         {
-            return new Rectangle((int)x, (int)y - ((int)tile.size.Y - 1) * 8, (int)tile.size.X * 8, (int)tile.size.Y * 8);
+            return new Rectangle((int)x, (int)y - ((int)tile.size.Y - 1) * GameDemo.chunkSize, (int)tile.size.X * GameDemo.chunkSize, (int)tile.size.Y * GameDemo.chunkSize);
         }
         public bool IsTouchingLeft(Rectangle objectOne, Rectangle objectTwo)
         {
@@ -266,7 +265,7 @@ namespace GameEngine
                     if (tile.collides == false)
                         continue;
 
-                    if (IsTouchingBottom(GetTileCollider(pos.X * 8, pos.Y * 8 - 2, tile), collisionBox))
+                    if (IsTouchingBottom(GetTileCollider(pos.X * cs, pos.Y * cs - 2, tile), collisionBox))
                         return true;
                 }
 

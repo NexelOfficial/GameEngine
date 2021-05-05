@@ -26,11 +26,14 @@ namespace GameEngine
         public static int mapWidth = 4000;
         public static int mapHeight = 1500;
         public static int mapSurface = (int) (mapHeight * 0.75);
-        public static float scaleFactor = 2.5f;
+        public static float scaleFactor = 2.8f;
+        public static int chunkSize = 8;
+        public static Vector2 chunkScalingFactor;
         public static int seed;
 
         public static Dictionary<Vector2, Dictionary<Vector2, Tile>> chunks = new Dictionary<Vector2, Dictionary<Vector2, Tile>>();
         public static Dictionary<Vector2, FurnaceMenu> furnaces = new Dictionary<Vector2, FurnaceMenu>();
+        public static Dictionary<Vector2, Light> lights = new Dictionary<Vector2, Light>();
 
         public GameDemo()
         {
@@ -38,6 +41,9 @@ namespace GameEngine
             Content.RootDirectory = "Content";
 
             IsMouseVisible = true;
+            IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
+
             graphics.PreferredBackBufferWidth = 1920;
             graphics.PreferredBackBufferHeight = 1080;
             //graphics.PreferredBackBufferWidth = 1280;
@@ -47,16 +53,18 @@ namespace GameEngine
 
             screenHeight = graphics.PreferredBackBufferHeight;
             screenWidth = graphics.PreferredBackBufferWidth;
+            chunkScalingFactor = new Vector2(screenWidth / (20 * chunkSize) / (scaleFactor / 2f), screenWidth / (35 * chunkSize) / (scaleFactor / 2f));
         }
 
         protected override void Initialize()
         {
+            Program.TryForceHighPerformanceGpu();
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            // Create camera, player, inventory and sprites
+            // Create camera, player, inventory, sprites and fonts
             camera = new Camera();
             player = new Player();
 
@@ -65,13 +73,26 @@ namespace GameEngine
             Tiles.InitTiles();
             font = Content.Load<SpriteFont>("segoe");
 
-            player.inventory.AddItem(Items.GetItem("Iron_Pickaxe"));
-            player.inventory.UnlockedBlueprints.Add(new Blueprint(
+            // Starter items
+            player.inventory.AddItem(Items.GetItem("IronPickaxe"));
+            player.inventory.AddItem(Items.GetItem("IronBar", 50));
+
+            // Blueprints
+            player.inventory.unlockedBlueprints.Add(new Blueprint(
                 Tiles.GetTile("Furnace"), new List<Item> 
                 { 
                     Items.GetItem("Stone", 20) 
                 }
             ));
+
+            // Recipes
+            for (int i = 0; i < 20; i++)
+                player.inventory.unlockedRecipes.Add(new Recipe(
+                    Items.GetItem("IronPickaxe"), new List<Item>
+                    {
+                        Items.GetItem("IronBar", 5)
+                    }
+                ));
 
             // Load the generator and seed
             seed = rand.Next(0, 99999);
@@ -80,6 +101,7 @@ namespace GameEngine
 
             gen.seed = seed;
             gen.GenerateTerrain(mapWidth, mapHeight);
+            //lights.Add(new Light(new Vector2(2000, GetHighestY(2000)), 20));
 
             rand = new Random(seed);
 
@@ -113,10 +135,11 @@ namespace GameEngine
 
             foreach (Vector2 chunk in player.playerChunks)
                 foreach (Vector2 pos in chunks[chunk].Keys)
-                    GetTile(pos).Draw(spriteBatch, pos, Color.White);
+                    GetTile(pos).Draw(spriteBatch, pos);
 
             DrawBlueprint();
 
+            CalculateLightLevel();
             player.Draw(spriteBatch);
             spriteBatch.End();
 
@@ -141,6 +164,23 @@ namespace GameEngine
             base.Draw(gameTime);
         }
 
+        private void CalculateLightLevel()
+        {
+            Vector2 chunk = player.GetChunk();
+            int startX = (int)(chunk.X - chunkScalingFactor.X + 2) * chunkSize;
+            int endX = (int)(chunk.X + chunkScalingFactor.X - 2) * chunkSize + chunkSize;
+
+            // Load sunlight
+            for (int x = startX; x <= endX; x++)
+            {
+                new Light(new Vector2(x, GetHighestY(x)), chunkSize, 0.2f).Render();
+            }
+
+            // Load static lights
+            foreach (Light light in lights.Values)
+                light.Render();
+        }
+
         private void DrawBlueprint()
         {
             if (player.inventory.placingBlueprint != null)
@@ -148,11 +188,11 @@ namespace GameEngine
                 Tile placingBlueprint = player.inventory.placingBlueprint;
                 Vector2 worldSpace = player.GetMousePosition();
 
-                int blockX = (int)(Math.Floor(worldSpace.X / 8) + (placingBlueprint.size.X / 4));
-                int blockY = (int)(Math.Floor(worldSpace.Y / 8) + (placingBlueprint.size.Y));
+                int blockX = (int)(Math.Floor(worldSpace.X / chunkSize) + (placingBlueprint.size.X / 4));
+                int blockY = (int)(Math.Floor(worldSpace.Y / chunkSize) + (placingBlueprint.size.Y));
                 bool canPlace = CanPlace(new Vector2(blockX, blockY), placingBlueprint);
 
-                spriteBatch.Draw(placingBlueprint.sprite, new Vector2(blockX * 8, (blockY - placingBlueprint.size.Y / 2) * 8), canPlace ? Color.Blue : Color.Red);
+                spriteBatch.Draw(placingBlueprint.sprite, new Vector2(blockX * chunkSize, (blockY - placingBlueprint.size.Y / 2) * chunkSize), canPlace ? Color.Blue : Color.Red);
 
                 if (Controls.IsPressed("LeftButton") && canPlace)
                 {
@@ -191,8 +231,8 @@ namespace GameEngine
 
         public static void AddTile(Vector2 pos, Tile tile)
         {
-            int chunkX = (int)Math.Floor(pos.X / 8);
-            int chunkY = (int)Math.Floor(pos.Y / 8);
+            int chunkX = (int)Math.Floor(pos.X / chunkSize);
+            int chunkY = (int)Math.Floor(pos.Y / chunkSize);
             Vector2 chunk = new Vector2(chunkX, chunkY);
 
             if (!chunks.ContainsKey(chunk))
@@ -221,10 +261,10 @@ namespace GameEngine
                     if (GetTile(x, y).type != null)
                         return false;
 
-                    if (x > Math.Floor(player.Position.X / 8) - player.Size.X / 16 - 1 &&
-                        x < Math.Ceiling(player.Position.X / 8) + player.Size.X / 16 + 1 &&
-                        y > Math.Floor(player.Position.Y / 8) - player.Size.Y / 16 - 1 &&
-                        y < Math.Ceiling(player.Position.Y / 8) + player.Size.Y / 16 + 1)
+                    if (x > Math.Floor(player.Position.X / chunkSize) - player.Size.X / 16 - 1 &&
+                        x < Math.Ceiling(player.Position.X / chunkSize) + player.Size.X / 16 + 1 &&
+                        y > Math.Floor(player.Position.Y / chunkSize) - player.Size.Y / 16 - 1 &&
+                        y < Math.Ceiling(player.Position.Y / chunkSize) + player.Size.Y / 16 + 1)
                         return false;
                 }
 
@@ -245,10 +285,10 @@ namespace GameEngine
             return true;
         }
 
-        public static void RemoveTile(Vector2 pos)
+        public static void RemoveTile(Vector2 pos, bool drop = false)
         {
-            int chunkX = (int)Math.Floor(pos.X / 8);
-            int chunkY = (int)Math.Floor(pos.Y / 8);
+            int chunkX = (int)Math.Floor(pos.X / chunkSize);
+            int chunkY = (int)Math.Floor(pos.Y / chunkSize);
             Vector2 chunk = new Vector2(chunkX, chunkY);
 
             if (!chunks.ContainsKey(chunk))
@@ -257,27 +297,61 @@ namespace GameEngine
             if (furnaces.ContainsKey(pos))
                 furnaces[pos].Destroy(pos);
 
+            if (drop && chunks[chunk].ContainsKey(pos))
+            {
+                Tile current = chunks[chunk][pos];
+                Console.WriteLine(current.type);
+                if (current.type != null)
+                    player.inventory.AddItem(Items.GetItem(current.type));
+            }
+
             chunks[chunk].Remove(pos);
         }
 
-        public static void RemoveTile(int x, int y)
+        public static void RemoveTile(int x, int y, bool drop = false)
         {
-            RemoveTile(new Vector2(x, y));
+            RemoveTile(new Vector2(x, y), drop);
+        }
+
+        public static void RemoveTree(Vector2 pos)
+        {
+            bool flag = true;
+            string woodType = GetTile(pos).type;
+            int y = 0;
+
+            // Continue if another layer of logs is found
+            while (flag && woodType != null)
+            {
+                // Place tree top if no more logs are found
+                if (GetTile((int)pos.X, (int)pos.Y - y).type != woodType)
+                {
+                    flag = false;
+                    for (int x = -1; x <= 1; x++)
+                        RemoveTile((int)pos.X - 5 + x, (int)pos.Y - y, true);
+                }
+
+                for (int x = -1; x <= 1; x++)
+                    RemoveTile((int)pos.X + x, (int)pos.Y - y, true);
+                y++;
+            }
         }
 
         public static Tile GetTile(Vector2 pos)
         {
-            int chunkX = (int)Math.Floor(pos.X / 8);
-            int chunkY = (int)Math.Floor(pos.Y / 8);
+            int chunkX = (int)Math.Floor(pos.X / chunkSize);
+            int chunkY = (int)Math.Floor(pos.Y / chunkSize);
             Vector2 chunk = new Vector2(chunkX, chunkY);
 
-            if (!chunks.ContainsKey(chunk))
+            Dictionary<Vector2, Tile> chunkBlocks;
+            chunks.TryGetValue(chunk, out chunkBlocks);
+
+            if (chunkBlocks == null)
                 return new Tile();
 
-            Dictionary<Vector2, Tile> chunkBlocks = chunks[chunk];
-
-            if (chunkBlocks.ContainsKey(pos))
-                return chunkBlocks[pos];
+            Tile output;
+            chunkBlocks.TryGetValue(pos, out output);
+            if (output != null)
+                return output;
             else
                 return new Tile();
         }
@@ -288,39 +362,11 @@ namespace GameEngine
 
         public static int GetHighestY(int x)
         {
-            // Find highest chunk
-            int chunkX = (int) Math.Floor(x / 8.0f);
-            Vector2 highestChunk = new Vector2(mapWidth, mapHeight);
+            for (int y = 0; y < mapHeight; y++)
+                if (GetTile(x, y).type != null)
+                    return y;
 
-            foreach (Vector2 chunk in chunks.Keys)
-                if (chunk.X == chunkX && chunk.Y < highestChunk.Y)
-                    highestChunk = chunk;
-
-            // Find highest block
-            int y = 9999999;
-            if (chunks.ContainsKey(highestChunk))
-                foreach (Vector2 pos in chunks[highestChunk].Keys)
-                {
-                    if (pos.X != x)
-                        continue;
-
-                    if ((int)pos.Y < y)
-                        y = (int)pos.Y;
-                }
-
-            highestChunk.Y += 1;
-
-            if (chunks.ContainsKey(highestChunk))
-                foreach (Vector2 pos in chunks[highestChunk].Keys)
-                {
-                    if (pos.X != x)
-                        continue;
-
-                    if ((int)pos.Y < y)
-                        y = (int)pos.Y;
-                }
-
-            return y;
+            return 0;    
         }
         #endregion
     }

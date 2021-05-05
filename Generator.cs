@@ -13,54 +13,6 @@ namespace GameEngine
         private Noise noise = new Noise();
         public int seed;
 
-        public void DigTileBlob(Vector2 pos, int radius, int steps, float spreadX = 0f, float spreadY = 0f)
-        {
-            Noise noise = new Noise();
-            int noiseFactor = rand.Next(radius - 1, radius + 2);
-
-            while (steps > 0)
-            {
-                for (int x = (int)pos.X - radius; x < pos.X + radius; x++)
-                {
-                    for (int y = (int)pos.Y - radius; y < pos.Y + radius; y++)
-                    {
-                        float spread = Math.Abs(noise.GetNext(x, seed, noiseFactor)) * 1.5f;
-
-                        if (Vector2.Distance(new Vector2(x, y), pos) <= radius + spread)
-                            GameDemo.RemoveTile(x, y);
-                    }
-                }
-
-                pos.X += (noise.GetNext(pos.Y / (radius * 2) + rand.Next(5, 10), seed, radius) - spreadX) * (radius * 2);
-                pos.Y += (noise.GetNext(rand.Next(20, 200), seed, radius) - spreadY) * (radius * 2);
-                steps--;
-            }
-        }
-
-        public void PlaceTileBlob(Vector2 pos, string type, int radius, int steps, float spreadX = 0f, float spreadY = 0f)
-        {
-            Noise noise = new Noise();
-            int noiseFactor = rand.Next(radius - 1, radius + 2);
-
-            while (steps > 0)
-            {
-                for (int x = (int)pos.X - radius; x < pos.X + radius; x++)
-                {
-                    for (int y = (int)pos.Y - radius; y < pos.Y + radius; y++)
-                    {
-                        float spread = noise.GetNext(x, seed, noiseFactor) * 1.5f;
-
-                        if (Vector2.Distance(new Vector2(x, y), pos) <= radius + spread)
-                            GameDemo.AddTile(x, y, Tiles.GetTile(type));
-                    }
-                }
-
-                pos.X += (noise.GetNext(pos.Y / (radius * 2) + rand.Next(5, 10), seed, radius) - spreadX) * (radius * 2);
-                pos.Y += (noise.GetNext(rand.Next(20, 200), seed, radius) - spreadY) * (radius * 2);
-                steps--;
-            }
-        }
-
         public void GenerateTerrain(int width, int height)
         {
             rand = new Random(seed);
@@ -69,7 +21,7 @@ namespace GameEngine
             genDeserts(width);
             genCaves(width, height);
             genOres(width, height);
-            genTrees(width);
+            //genTrees(width);
         }
 
         private void genDirtStone(int width)
@@ -194,7 +146,6 @@ namespace GameEngine
 
         private void genTrees(int width)
         {
-            Tile birchLog = Tiles.GetTile("BirchLog");
             for (int x = 0; x < width; x++)
             {
                 if (rand.Next(0, 10) == 0)
@@ -215,9 +166,10 @@ namespace GameEngine
                     // Add wood
                     for (int y = highestY - height; y < highestY; y++)
                     {
-                        GameDemo.AddTile(x, y, birchLog);
-                        GameDemo.AddTile(x + 1, y, birchLog);
+                        GameDemo.AddTile(x, y, Tiles.GetTile("BirchLog"));
+                        GameDemo.AddTile(x + 1, y, Tiles.GetTile("BirchLog"));
                     }
+
                     Tile treeTop = Tiles.GetTile("BirchTop");
                     treeTop.frameX = rand.Next(0, 3) * 96;
                     GameDemo.AddTile(x - 5, highestY - height - 1, treeTop);
@@ -226,6 +178,55 @@ namespace GameEngine
                     for (int i = 0; i < 4; i++)
                         GameDemo.AddTile(x - 1 + i, highestY, Tiles.GetTile("Grass"));
                 }
+            }
+        }
+
+        // Tools
+        public void DigTileBlob(Vector2 pos, int radius, int steps, float spreadX = 0f, float spreadY = 0f)
+        {
+            Noise noise = new Noise();
+            int noiseFactor = rand.Next(radius - 1, radius + 2);
+
+            while (steps > 0)
+            {
+                for (int x = (int)pos.X - radius; x < pos.X + radius; x++)
+                {
+                    for (int y = (int)pos.Y - radius; y < pos.Y + radius; y++)
+                    {
+                        float spread = Math.Abs(noise.GetNext(x, seed, noiseFactor)) * 1.5f;
+
+                        if (Vector2.Distance(new Vector2(x, y), pos) <= radius + spread)
+                            GameDemo.RemoveTile(x, y);
+                    }
+                }
+
+                pos.X += (noise.GetNext(pos.Y / (radius * 2) + rand.Next(5, 10), seed, radius) - spreadX) * (radius * 2);
+                pos.Y += (noise.GetNext(rand.Next(20, 200), seed, radius) - spreadY) * (radius * 2);
+                steps--;
+            }
+        }
+
+        public void PlaceTileBlob(Vector2 pos, string type, int radius, int steps, float spreadX = 0f, float spreadY = 0f)
+        {
+            Noise noise = new Noise();
+            int noiseFactor = rand.Next(radius - 1, radius + 2);
+
+            while (steps > 0)
+            {
+                for (int x = (int)pos.X - radius; x < pos.X + radius; x++)
+                {
+                    for (int y = (int)pos.Y - radius; y < pos.Y + radius; y++)
+                    {
+                        float spread = noise.GetNext(x, seed, noiseFactor) * 1.5f;
+
+                        if (Vector2.Distance(new Vector2(x, y), pos) <= radius + spread)
+                            GameDemo.AddTile(x, y, Tiles.GetTile(type));
+                    }
+                }
+
+                pos.X += (noise.GetNext(pos.Y / (radius * 2) + rand.Next(5, 10), seed, radius) - spreadX) * (radius * 2);
+                pos.Y += (noise.GetNext(rand.Next(20, 200), seed, radius) - spreadY) * (radius * 2);
+                steps--;
             }
         }
     }

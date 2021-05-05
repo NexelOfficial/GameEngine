@@ -12,7 +12,8 @@ namespace GameEngine.ItemTools
 
         public static void InitTiles()
         {
-            allTiles.Add("BirchLog", new Tile("BirchLog", false, 600));
+            allTiles.Add("BirchWood", new Tile("BirchWood", true, 100));
+            allTiles.Add("BirchLog", new Tile("BirchLog", false, 600, 1, 1, true));
             allTiles.Add("BirchTop", new Tile("BirchTop", false, 600, 12, 12));
             allTiles.Add("Grass", new Tile("Grass", true, 100));
             allTiles.Add("Stone", new Tile("Stone", true, 200));
@@ -35,10 +36,10 @@ namespace GameEngine.ItemTools
                 i.hitPoints = j.hitPoints;
                 i.color = j.color;
                 i.size = j.size;
+                i.isWood = j.isWood;
                 return i;
             }
 
-            Console.WriteLine(item);
             return null;
         }
     }

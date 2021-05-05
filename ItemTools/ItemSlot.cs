@@ -14,12 +14,14 @@ namespace GameEngine.ItemTools
         public float size;
         public Item item;
         public bool shown = false;
+        public bool readOnly = false;
 
-        public ItemSlot(Vector2 position, Item item = null, float size = 1.0f)
+        public ItemSlot(Vector2 position, Item item = null, float size = 1.0f, bool readOnly = false)
         {
             this.position = position;
             this.size = size;
             this.item = item;
+            this.readOnly = readOnly;
         }
 
         public ItemSlot()

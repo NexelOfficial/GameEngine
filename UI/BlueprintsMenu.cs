@@ -12,7 +12,7 @@ namespace GameEngine.UI
     {
         public void Draw(SpriteBatch batch)
         {
-            List<Blueprint> allBlueprints = GameDemo.player.inventory.UnlockedBlueprints;
+            List<Blueprint> allBlueprints = GameDemo.player.inventory.unlockedBlueprints;
 
             foreach (Blueprint blueprint in allBlueprints)
             {

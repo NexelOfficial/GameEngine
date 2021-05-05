@@ -12,14 +12,17 @@ namespace GameEngine.ItemTools
     {
         public Player owner;
         public List<ItemSlot> Slots = new List<ItemSlot>();
-        public List<Blueprint> UnlockedBlueprints = new List<Blueprint>();
+        public List<Blueprint> unlockedBlueprints = new List<Blueprint>();
+        public List<Recipe> unlockedRecipes = new List<Recipe>();
 
         public BlueprintsMenu blueprints;
         public FurnaceMenu furnace;
+        public CraftingMenu crafting;
 
         public int selectedIndex;
         public bool inventoryShown = false;
         public bool blueprintsShown = false;
+        public bool craftingShown = false;
         public bool furnaceShown = false;
         public Tile placingBlueprint;
 
@@ -39,6 +42,7 @@ namespace GameEngine.ItemTools
             }
 
             blueprints = new BlueprintsMenu();
+            crafting = new CraftingMenu();
         }
 
         public void SelectSlot()
@@ -75,6 +79,7 @@ namespace GameEngine.ItemTools
                     furnace = null;
                     inventoryShown = true;
                     blueprintsShown = false;
+                    craftingShown = false;
                 }
 
             // Toggle blueprints menu
@@ -86,6 +91,20 @@ namespace GameEngine.ItemTools
                     furnace = null;
                     inventoryShown = false;
                     blueprintsShown = true;
+                    craftingShown = false;
+                }
+
+
+            // Toggle crafting menu
+            if (Controls.IsPressed(Keys.C))
+                if (craftingShown)
+                    craftingShown = false;
+                else
+                {
+                    furnace = null;
+                    inventoryShown = false;
+                    blueprintsShown = false;
+                    craftingShown = true;
                 }
 
             // Check if slot is clicked
@@ -95,6 +114,9 @@ namespace GameEngine.ItemTools
                     heldItem = new Item();
                 if (slot.item.amount <= 0)
                     slot.item = new Item();
+
+                if (slot.readOnly == true)
+                    continue;
 
                 if (slot.IsClicked("LeftButton"))
                 {
@@ -142,6 +164,8 @@ namespace GameEngine.ItemTools
 
         public void DrawInventory(SpriteBatch batch)
         {
+            int cs = GameDemo.chunkSize;
+
             // Draw item slots
             for (int i = 0; i <= 9; i++)
             {
@@ -165,10 +189,14 @@ namespace GameEngine.ItemTools
             if (blueprintsShown && placingBlueprint == null)
                 blueprints.Draw(batch);
 
+            // Draw crafting menu
+            if (craftingShown)
+                crafting.Draw(batch);
+
             // Draw furnace menu
             Vector2 worldSpace = owner.GetMousePosition();
-            int blockX = (int)Math.Floor(worldSpace.X / 8) + 1;
-            int blockY = (int)Math.Floor(worldSpace.Y / 8) + 2;
+            int blockX = (int)Math.Floor(worldSpace.X / cs) + 1;
+            int blockY = (int)Math.Floor(worldSpace.Y / cs) + 2;
             Tile clickedTile = GameDemo.GetTile(blockX, blockY);
 
             if (clickedTile.type == "Furnace")
@@ -183,6 +211,7 @@ namespace GameEngine.ItemTools
                 furnaceShown = true;
                 blueprintsShown = false;
                 inventoryShown = false;
+                craftingShown = false;
             }
 
             // Close menu(s)
@@ -191,6 +220,7 @@ namespace GameEngine.ItemTools
                 furnace = null;
                 blueprintsShown = false;
                 inventoryShown = false;
+                craftingShown = false;
             }
         }
 
